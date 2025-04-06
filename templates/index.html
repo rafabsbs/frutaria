@@ -12,35 +12,18 @@
                 {% for produto in destaques %}
                 <div class="swiper-slide">
                     <div class="card card-fruta h-100 mx-2">
-                        <!-- Botão de Editar (Admin) -->
-                        {% if 'usuario_id' in session and session['usuario_id'] == 1 %}
-                        <a href="{{ url_for('editar_produto', id=produto.id) }}" 
-                           class="btn btn-sm btn-warning position-absolute top-0 start-0 m-2">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        {% endif %}
-
-                        <!-- Badge de Promoção -->
                         {% if produto.preco < 5 %}
                         <span class="badge bg-danger position-absolute top-0 end-0 m-2">PROMOÇÃO</span>
                         {% endif %}
-
-                        <!-- Imagem do Produto -->
-                        <a href="{{ url_for('produto', id=produto.id) }}">
-                            <img src="{{ url_for('static', filename='imagens/' + produto.imagem) }}" 
-                                 class="card-img-top" 
-                                 alt="{{ produto.nome }}"
-                                 style="height: 200px; object-fit: cover;">
-                        </a>
-
-                        <!-- Corpo do Card -->
+                        <a href="{{ url_for('produto', id=produto.id) }}"><img src="{{ url_for('static', filename='imagens/' + produto.imagem) }}" 
+                             class="card-img-top" 
+                             alt="{{ produto.nome }}"
+                             style="height: 200px; object-fit: cover;"></a>
                         <div class="card-body">
                             <h5 class="card-title">{{ produto.nome }}</h5>
                             <p class="card-text text-success fw-bold">R$ {{ "%.2f"|format(produto.preco) }}</p>
                             <p class="card-text text-muted small">{{ produto.descricao[:60] }}...</p>
                         </div>
-
-                        <!-- Footer do Card -->
                         <div class="card-footer bg-white border-0 pb-3">
                             <div class="d-flex justify-content-between">
                                 <a href="{{ url_for('produto', id=produto.id) }}" 
@@ -66,17 +49,16 @@
             <!-- Paginação -->
             <div class="swiper-pagination"></div>
         </div>
+        
     </div>
 </section>
-
-<!-- Estilos e Scripts (mantidos iguais) -->
 <style>
     .swiper-container {
         padding: 20px 0;
     }
     
     .swiper-slide {
-        height: auto;
+        height: auto; /* Ajusta a altura automaticamente */
     }
     
     .card-fruta {
@@ -92,7 +74,7 @@
     
     .swiper-button-next,
     .swiper-button-prev {
-        color: #28a745;
+        color: #28a745; /* Cor verde para combinar com o tema */
         background-color: white;
         width: 40px;
         height: 40px;
@@ -108,16 +90,17 @@
     .swiper-pagination-bullet-active {
         background-color: #b60000;
     }
+    
 </style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const swiper = new Swiper('.swiper-container', {
-            slidesPerView: 1,
+            // Configurações do carrossel
+            slidesPerView: 1,  // Mostra 1 slide por vez em mobile
             spaceBetween: 20,
-            loop: true,
+            loop: true,  // Cria um loop infinito
             autoplay: {
-                delay: 5000,
+                delay: 5000,  // Passa automaticamente a cada 5 segundos
                 disableOnInteraction: false,
             },
             pagination: {
@@ -129,17 +112,37 @@
                 prevEl: '.swiper-button-prev',
             },
             breakpoints: {
-                576: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                992: { slidesPerView: 4 }
+                // Quando a largura da tela é >= 576px
+                576: {
+                    slidesPerView: 2,
+                },
+                // Quando a largura da tela é >= 768px
+                768: {
+                    slidesPerView: 3,
+                },
+                // Quando a largura da tela é >= 992px
+                992: {
+                    slidesPerView: 4,
+                }
             },
             effect: 'coverflow',
-            coverflowEffect: {
+                coverflowEffect: {
                 rotate: 30,
                 slideShadows: false,
-            }
+                depth: 100,
+                modifier: 1,
+                stretch: 0,
+                slidesPerView: 'auto',
+                centeredSlides: true,
+                preloadImages: false,
+                lazy: true,
+                simulateTouch: true,
+                grabCursor: true,
+                effect: 'slide' // ou 'fade', 'cube', 'flip'
+},
         });
     });
+         
 </script>
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 {% endblock %}
