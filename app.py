@@ -87,7 +87,7 @@ class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(128))
+    senha_hash = db.Column(db.String(256), nullable=False)
     telefone = db.Column(db.String(20))
     admin = db.Column(db.Boolean, default=False)
     
@@ -95,8 +95,12 @@ class Usuario(db.Model):
     carrinhos = db.relationship('Carrinho', backref='usuario', lazy=True)
     
     def set_senha(self, senha):
-        self.senha_hash = generate_password_hash(senha)
-        
+    # Use pbkdf2 como método mais compacto (ainda seguro)
+        self.senha_hash = generate_password_hash(
+        senha,
+        method='pbkdf2:sha256',
+        salt_length=8
+    )
     def check_senha(self, senha):
         return check_password_hash(self.senha_hash, senha)
 
