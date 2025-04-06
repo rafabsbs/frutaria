@@ -40,12 +40,7 @@
                         </div>
                     </div>
                 </div>
-                {% if 'usuario_id' in session and session['usuario_id'] == 1 %}
-                                <div class="admin-actions">
-                                    <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn-edit">Editar</a>
-                                </div>
-                                {% endif %}
-                {% endfor %}
+                
             </div>
             
             <!-- Botões de navegação -->
@@ -151,4 +146,11 @@
          
 </script>
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+{% if 'usuario_id' in session and session['usuario_id'] == 1 %}
+                                <div class="admin-actions">
+                                    <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn-edit">Editar</a>
+                                </div>
+                                {% endif %}
+                {% endfor %}
+
 {% endblock %}
