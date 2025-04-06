@@ -239,46 +239,67 @@ def finalizar_compra():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
-        usuario = Usuario.query.filter_by(email=email).first()
-        
-        if usuario and usuario.check_senha(senha):
+        try:
+            email = request.form.get('email')
+            senha = request.form.get('senha')
+            
+            if not email or not senha:
+                flash('Preencha todos os campos', 'danger')
+                return redirect(url_for('login'))
+
+            usuario = Usuario.query.filter_by(email=email).first()
+            
+            if not usuario:
+                flash('Credenciais inválidas', 'danger')
+                return redirect(url_for('login'))
+                
+            if not usuario.check_senha(senha):
+                flash('Credenciais inválidas', 'danger')
+                return redirect(url_for('login'))
+            
+            # Login bem-sucedido
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
             session['admin'] = usuario.admin
+            
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('index'))
-        else:
-            flash('Email ou senha incorretos', 'danger')
+            
+        except Exception as e:
+            app.logger.error(f'Erro no login: {str(e)}')
+            flash('Ocorreu um erro durante o login', 'danger')
     
     return render_template('login.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        nome = request.form['nome']
-        email = request.form['email']
-        senha = request.form['senha']
-        telefone = request.form['telefone']
-        
-        if Usuario.query.filter_by(email=email).first():
-            flash('Email já cadastrado', 'danger')
-            return redirect(url_for('cadastro'))
+        try:
+            data = {
+                'nome': request.form.get('nome'),
+                'email': request.form.get('email'),
+                'telefone': request.form.get('telefone'),
+                'admin': False
+            }
             
-        novo_usuario = Usuario(
-            nome=nome,
-            email=email,
-            telefone=telefone,
-            admin=False  # Por padrão não é admin
-        )
-        novo_usuario.set_senha(senha)
-        
-        db.session.add(novo_usuario)
-        db.session.commit()
-        
-        flash('Cadastro realizado com sucesso! Faça login.', 'success')
-        return redirect(url_for('login'))
+            if Usuario.query.filter_by(email=data['email']).first():
+                flash('Email já cadastrado', 'error')
+                return redirect(url_for('cadastro'))
+            
+            usuario = Usuario(**data)
+            usuario.set_senha(request.form.get('senha'))  # Garanta que este método existe
+            
+            db.session.add(usuario)
+            db.session.commit()
+            
+            flash('Cadastro realizado!', 'success')
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro: {str(e)}', 'error')
+            return redirect(url_for('cadastro'))
+    print(Usuario.query.all()) 
     
     return render_template('cadastro.html')
 
@@ -433,6 +454,40 @@ def excluir_produto(id):
         print(f"Erro: {str(e)}")
     
     return redirect(url_for('index'))
+
+@app.route('/debug-usuario')
+def debug_usuario():
+    try:
+        # Testa consulta
+        usuarios = Usuario.query.all()
+        # Testa inserção (remove depois)
+        novo = Usuario(
+            nome="Teste",
+            email="teste@teste.com",
+            senha_hash="teste123",
+            telefone="11999999999"
+        )
+        db.session.add(novo)
+        db.session.commit()
+        return "Operações com usuario OK!"
+    except Exception as e:
+        return f"Erro: {str(e)}", 500
+
+@app.route('/debug-login')
+def debug_login():
+    try:
+        # Testa um usuário existente
+        usuario = Usuario.query.first()
+        if usuario:
+            return f"Usuário teste: {usuario.email} - Senha válida: {usuario.check_senha('senha_test')}"
+        return "Nenhum usuário cadastrado"
+    except Exception as e:
+        return f"Erro: {str(e)}", 500
+
+@app.before_request
+def before_request():
+    if 'usuario_id' not in session and request.endpoint not in ['login', 'cadastro', 'static']:
+        return redirect(url_for('login'))
 
 def create_app():
     return app
