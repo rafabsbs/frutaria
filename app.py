@@ -257,36 +257,28 @@ def login():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        try:
-            nome = request.form['nome']
-            email = request.form['email']
-            senha = request.form['senha']
-            telefone = request.form['telefone']
-            
-            # Verifica se usuário já existe
-            if Usuario.query.filter_by(email=email).first():
-                flash('Email já cadastrado', 'danger')
-                return redirect(url_for('cadastro'))
-                
-            novo_usuario = Usuario(
-                nome=nome,
-                email=email,
-                telefone=telefone,
-                admin=False
-            )
-            novo_usuario.set_senha(senha)
-            
-            db.session.add(novo_usuario)
-            db.session.commit()
-            
-            flash('Cadastro realizado com sucesso! Faça login.', 'success')
-            return redirect(url_for('login'))
-            
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f'Erro no cadastro: {str(e)}')
-            flash('Ocorreu um erro durante o cadastro. Por favor, tente novamente.', 'danger')
+        nome = request.form['nome']
+        email = request.form['email']
+        senha = request.form['senha']
+        telefone = request.form['telefone']
+        
+        if Usuario.query.filter_by(email=email).first():
+            flash('Email já cadastrado', 'danger')
             return redirect(url_for('cadastro'))
+            
+        novo_usuario = Usuario(
+            nome=nome,
+            email=email,
+            telefone=telefone,
+            admin=False  # Por padrão não é admin
+        )
+        novo_usuario.set_senha(senha)
+        
+        db.session.add(novo_usuario)
+        db.session.commit()
+        
+        flash('Cadastro realizado com sucesso! Faça login.', 'success')
+        return redirect(url_for('login'))
     
     return render_template('cadastro.html')
 
